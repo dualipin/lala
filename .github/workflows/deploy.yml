@@ -185,9 +185,6 @@ jobs:
             skills-lock.json
             skill-lock.json
             database/**
-            resources/js/**
-            resources/css/**
             public/hot
             public/fonts-manifest.dev.json
-            storage/**
             vendor/**
