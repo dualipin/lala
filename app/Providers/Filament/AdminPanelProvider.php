@@ -29,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('LALA CEDIS Atasta')
             ->brandLogo(asset('assets/logo.png'))
             ->brandLogoHeight('2.5rem')
+            ->profile()
             ->colors([
                 'primary' => Color::Amber,
             ])

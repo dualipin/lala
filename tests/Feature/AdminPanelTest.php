@@ -16,6 +16,8 @@ test('guests are redirected to the admin login page', function (string $uri) {
     '/admin/promotions',
     '/admin/inventories',
     '/admin/inventory-movements',
+    '/admin/users',
+    '/admin/profile',
 ]);
 
 test('authenticated users can access the admin dashboard and its navigation', function () {
@@ -30,6 +32,24 @@ test('authenticated users can access the admin dashboard and its navigation', fu
         ->assertSee('Movimientos');
 });
 
+test('authenticated users can manage users and edit their profile', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/admin/users')
+        ->assertOk()
+        ->assertSee('Usuarios');
+
+    $this->actingAs($user)
+        ->get('/admin/users/create')
+        ->assertOk()
+        ->assertSee('Correo electrónico');
+
+    $this->actingAs($user)
+        ->get('/admin/profile')
+        ->assertOk();
+});
+
 test('authenticated users can list every inventory resource', function (string $uri) {
     $this->actingAs(User::factory()->create())
         ->get($uri)
@@ -41,6 +61,7 @@ test('authenticated users can list every inventory resource', function (string $
     '/admin/promotions',
     '/admin/inventories',
     '/admin/inventory-movements',
+    '/admin/users',
 ]);
 
 test('authenticated users can open every create form', function (string $uri) {
@@ -54,6 +75,7 @@ test('authenticated users can open every create form', function (string $uri) {
     '/admin/promotions/create',
     '/admin/inventories/create',
     '/admin/inventory-movements/create',
+    '/admin/users/create',
 ]);
 
 test('an inventory record can only be edited to register a stock count', function () {
