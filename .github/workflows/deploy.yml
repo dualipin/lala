@@ -3,6 +3,12 @@ name: Deploy Laravel Application
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit SHA, tag o rama a desplegar (rollback)"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -11,21 +17,31 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+env:
+  # Debe coincidir con la version de PHP del hosting
+  PHP_VERSION: "8.4"
+  NODE_VERSION: "24"
+  DEPLOY_REF: ${{ inputs.ref || github.sha }}
+
 jobs:
-  build-and-deploy:
-    name: Build and Deploy
+  test:
+    name: Lint and Test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ env.DEPLOY_REF }}
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          extensions: mbstring, xml, ctype, iconv, pdo_mysql, bcmath, fileinfo
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, xml, ctype, iconv, pdo_mysql, bcmath, fileinfo, intl, sqlite3, pdo_sqlite
           tools: composer:v2
+          coverage: none
 
       - name: Composer Cache Directory
         id: composer-cache-dir
@@ -39,13 +55,68 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-composer-
 
-      - name: Install Dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install Dependencies (with dev)
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Security audit
+        run: composer audit
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Pint (code style)
+        run: vendor/bin/pint --test
+
+      - name: Pest (tests)
+        run: php artisan test
+
+  deploy:
+    name: Build and Deploy
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 120 # el primer deploy por FTP es lento
+    environment: production
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.DEPLOY_REF }}
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, xml, ctype, iconv, pdo_mysql, bcmath, fileinfo, intl
+          tools: composer:v2
+          coverage: none
+
+      - name: Composer Cache Directory
+        id: composer-cache-dir
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer packages
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      # Sin dev: el vendor/ que se sube no incluye Pest, Boost, etc.
+      # Los scripts de composer siguen activos: filament:upgrade publica los assets de Filament en public/
+      - name: Install Dependencies (production)
+        run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
       - name: Build assets
@@ -59,54 +130,52 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          timeout: 120000
+          log-level: standard
           server-dir: ./${{ secrets.SERVER_DIR }}/
           exclude: |
-                **/.git*
-                **/.git*/**
-                .github/**
-                **/node_modules/**
-                package.json
-                package-lock.json
-                yarn.lock
-                pnpm-lock.yaml
-                vite.config.js
-                vite.config.ts
-                tailwind.config.js
-                postcss.config.js
-                tsconfig.json
-                **/tests/**
-                phpunit.xml
-                phpunit.xml.dist
-                Pest.php
-                .prettier*
-                .eslintrc*
-                phpstan.neon
-                README.md
-                CHANGELOG.md
-                LICENSE
-                docs/**
-                .env
-                .env.example
-                *.sql
-                *.sqlite
-                docker/**
-                docker-compose.yml
-                Makefile
-                .vscode/**
-                .idea/**
-                .editorconfig
-                .phpstorm.meta.php
-                _ide_helper.php
-                _ide_helper_models.php
-                .claude/**
-                .agent/**
-                .agents/**
-                AGENTS.md
-                CLAUDE.md
-                skill-lock.json
-                storage/logs/*.log
-                storage/framework/cache/data/**
-                storage/framework/sessions/*
-                storage/framework/views/*
-                storage/framework/testing/**
-                data/**
+            **/.git*
+            **/.git*/**
+            .github/**
+            **/node_modules/**
+            package.json
+            package-lock.json
+            yarn.lock
+            pnpm-lock.yaml
+            vite.config.js
+            vite.config.ts
+            tailwind.config.js
+            postcss.config.js
+            tsconfig.json
+            **/tests/**
+            phpunit.xml
+            phpunit.xml.dist
+            Pest.php
+            .prettier*
+            .eslintrc*
+            phpstan.neon
+            README.md
+            CHANGELOG.md
+            LICENSE
+            docs/**
+            .env
+            .env.example
+            *.sql
+            *.sqlite
+            docker/**
+            docker-compose.yml
+            Makefile
+            .vscode/**
+            .idea/**
+            .editorconfig
+            .phpstorm.meta.php
+            _ide_helper.php
+            _ide_helper_models.php
+            .claude/**
+            .agent/**
+            .agents/**
+            AGENTS.md
+            CLAUDE.md
+            skill-lock.json
+            storage/**
