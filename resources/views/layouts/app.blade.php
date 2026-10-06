@@ -7,6 +7,7 @@
 
     <title>{{ $title ?? 'Grupo LALA - Nutriendo y Sirviendo Alimentos de Calidad' }}</title>
     <meta name="description" content="Portal web oficial de productos, innovaciones y distribución LALA en Tabasco y sureste de México. CEDIS Atasta de Serra.">
+    <link rel="icon" type="image/png" href="{{ asset('assets/logo.png') }}">
 
     <!-- Google Fonts: Poppins (Display/Headings) & Inter (Body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,9 +36,9 @@
                 <!-- Columna 1: Identidad Corporativa -->
                 <div>
                     <div class="flex items-center gap-2 mb-4">
-                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center font-display font-extrabold text-white text-xl shadow-md">
-                            L
-                        </div>
+                        <span class="w-11 h-11 rounded-xl bg-white overflow-hidden flex items-center justify-center shadow-md">
+                            <img src="{{ asset('assets/logo.png') }}" alt="Logo LALA" width="36" height="36" class="w-9 h-9 object-contain" />
+                        </span>
                         <span class="font-display font-extrabold text-2xl tracking-tight text-white">LALA<span class="text-primary font-bold">.</span></span>
                     </div>
                     <p class="text-slate-300 text-sm leading-relaxed mb-4">

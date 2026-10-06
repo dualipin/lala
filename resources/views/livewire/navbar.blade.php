@@ -49,9 +49,9 @@
 
                 <!-- Brand Logo -->
                 <a href="{{ route('home') }}" class="flex items-center gap-2 group">
-                    <div class="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center font-display font-black text-white text-2xl shadow-sm group-hover:scale-105 transition-transform duration-200">
-                        L
-                    </div>
+                    <span class="w-11 h-11 rounded-2xl bg-white ring-1 ring-slate-200 overflow-hidden flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-200">
+                        <img src="{{ asset('assets/logo.png') }}" alt="Logo LALA" width="36" height="36" class="w-9 h-9 object-contain" />
+                    </span>
                     <div class="flex flex-col">
                         <span class="font-display font-extrabold text-2xl tracking-tighter text-secondary leading-none">
                             LALA<span class="text-primary">.</span>
