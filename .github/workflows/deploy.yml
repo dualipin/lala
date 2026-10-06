@@ -137,46 +137,57 @@ jobs:
           exclude: |
             **/.git*
             **/.git*/**
-            .github/**
+            **/.ai/**
+            **/.github/**
+            **/.claude/**
+            **/.cursor/**
+            **/.opencode/**
+            **/.agents/**
+            **/.agent/**
+            **/.vscode/**
+            **/.idea/**
             **/node_modules/**
+            **/tests/**
+            **/*.md
+            *.md
+            docs/**
             package.json
             package-lock.json
             yarn.lock
             pnpm-lock.yaml
-            vite.config.js
-            vite.config.ts
-            tailwind.config.js
-            postcss.config.js
-            tsconfig.json
-            **/tests/**
+            .npmrc
+            vite.config.*
+            tailwind.config.*
+            postcss.config.*
+            tsconfig*.json
             phpunit.xml
             phpunit.xml.dist
             Pest.php
+            phpstan.neon*
             .prettier*
-            .eslintrc*
-            phpstan.neon
-            README.md
-            CHANGELOG.md
+            .eslint*
             LICENSE
-            docs/**
             .env
-            .env.example
+            .env.*
             *.sql
             *.sqlite
+            *.db
+            *.log
             docker/**
             docker-compose.yml
             Makefile
-            .vscode/**
-            .idea/**
             .editorconfig
             .phpstorm.meta.php
             _ide_helper.php
             _ide_helper_models.php
-            .claude/**
-            .agent/**
-            .agents/**
-            AGENTS.md
-            CLAUDE.md
+            boost.json
+            opencode.json
+            skills-lock.json
             skill-lock.json
+            database/**
+            resources/js/**
+            resources/css/**
+            public/hot
+            public/fonts-manifest.dev.json
             storage/**
             vendor/**
